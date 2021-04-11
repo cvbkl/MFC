@@ -1,0 +1,187 @@
+#INA 219 Reader for 4 chips
+#Christian Hecht 2020
+import os
+from datetime import datetime
+import time
+from ina219 import INA219
+
+print("Stage 1, startup")
+
+ina = INA219(shunt_ohms=0.1,
+             max_expected_amps = 0.6,
+             address=0x40)
+ina2 = INA219(shunt_ohms=0.1,
+             max_expected_amps = 0.6,
+             address=0x41)
+ina3 = INA219(shunt_ohms=0.1,
+             max_expected_amps = 0.6,
+             address=0x44)
+ina4 = INA219(shunt_ohms=0.1,
+             max_expected_amps = 0.6,
+             address=0x45)
+
+print("Stage 2, INA Recognized")
+
+ina.configure(voltage_range=ina.RANGE_16V,
+              gain=ina.GAIN_AUTO,
+              bus_adc=ina.ADC_128SAMP,
+              shunt_adc=ina.ADC_128SAMP)
+ina2.configure(voltage_range=ina.RANGE_16V,
+              gain=ina.GAIN_AUTO,
+              bus_adc=ina.ADC_128SAMP,
+              shunt_adc=ina.ADC_128SAMP)
+ina3.configure(voltage_range=ina.RANGE_16V,
+              gain=ina.GAIN_AUTO,
+              bus_adc=ina.ADC_128SAMP,
+              shunt_adc=ina.ADC_128SAMP)
+ina4.configure(voltage_range=ina.RANGE_16V,
+              gain=ina.GAIN_AUTO,
+              bus_adc=ina.ADC_128SAMP,
+              shunt_adc=ina.ADC_128SAMP)
+
+print("Stage 3, INA Configured")
+
+def asktowrite():
+    write = input("Write to file? [y/n]")
+    if write == "y":
+        textfile = open("readings.txt", "a")
+        textfile.write("Initializing Quad INA Program at " + str(datetime.now()) + "\n")
+        textfile.close()
+        wrio = True
+        uerrorw = False
+        return uerrorw, wrio
+    elif write == "n":
+        print("This program will not write to a file.")
+        wrio = False
+        uerrorw = False
+        return uerrorw, wrio
+    else:
+        print("Input not understood. Try again.")
+        uerrorw = True
+        wrio = 0
+        return uerrorw, wrio
+uerrorw, wrio = asktowrite()
+
+while uerrorw == True:
+    uerrorw, wrio = asktowrite()
+
+def asktodisplay():
+    display = input("Display readings in Thonny? [y/n]")
+    if display == "y":
+        dio = True
+        uerrord = False
+        return uerrord, dio
+    elif display == "n":
+        print("This program will not display.")
+        dio = False
+        uerrord = False
+        return uerrord, dio
+    else:
+        print("Input not understood. Try again.")
+        uerrord = True
+        dio = 0
+        return uerrord, dio
+
+uerrord, dio = asktodisplay()
+
+while uerrord == True:
+    uerrord, dio = asktodisplay()
+
+def asktocsv():
+    csv = input("Write to csv? (for import to Google Sheets) [y/n]")
+    if csv == "y":
+        cio = True
+        uerrorc = False
+        return uerrorc, cio
+    elif csv == "n":
+        print("This program will not write to csv.")
+        cio = False
+        uerrorc = False
+        return uerrorc, cio
+    else:
+        print("Input not understood. Try again.")
+        uerrorc = True
+        cio = 0
+        return uerrorc, cio
+    
+uerrorc, cio = asktocsv()
+
+while uerrorc == True:
+    uerrorc, cio = asktocsv()
+
+def printer(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4):
+        print(dt)
+        print("Sensor 1:")
+        print("Voltage: " + str(v1) + " V")
+        print("Current: " + str(i1) + " mA")
+        print("Power: " + str(p1) + " mW")
+        print("Sensor 2:")
+        print("Voltage: " + str(v2) + " V")
+        print("Current: " + str(i2) + " mA")
+        print("Power: " + str(p2) + " mW")
+        print("Sensor 3:")
+        print("Voltage: " + str(v3) + " V")
+        print("Current: " + str(i3) + " mA")
+        print("Power: " + str(p3) + " mW")
+        print("Sensor 4:")
+        print("Voltage: " + str(v4) + " V")
+        print("Current: " + str(i4) + " mA")
+        print("Power: " + str(p4) + " mW\n")
+        
+
+def writer(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4):
+        textfile = open("/home/pi/Desktop/Python Scripts/Data/data_log_quad.txt", "a")
+        textfile.write("Sensor 1:\n")
+        textfile.write("Voltage: " + str(v1) + " V\n")
+        textfile.write("Current: " + str(i1) + " mA\n")
+        textfile.write("Power: " + str(p1) + " mW\n")
+        textfile.write("Sensor 2:")
+        textfile.write("Voltage: " + str(v2) + " V\n")
+        textfile.write("Current: " + str(i2) + " mA\n")
+        textfile.write("Power: " + str(p2) + " mW\n")
+        textfile.write("Sensor 3:\n")
+        textfile.write("Voltage: " + str(v3) + " V\n")
+        textfile.write("Current: " + str(i3) + " mA\n")
+        textfile.write("Power: " + str(p3) + " mW\n")
+        textfile.write("Sensor 4:\n")
+        textfile.write("Voltage: " + str(v4) + " V\n")
+        textfile.write("Current: " + str(i4) + " mA\n")
+        textfile.write("Power: " + str(p4) + " mW\n\n")
+        textfile.close()
+
+def csvwriter(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4):
+    file = open("/home/pi/Desktop/Python Scripts/Data/data_log_quad.csv", "a")
+    if os.stat("/home/pi/Desktop/Python Scripts/Data/data_log_quad.csv").st_size == 0:
+            file.write("Time,Voltage1,Current1,Power1,Voltage2,Current2,Power2,Voltage3,Current3,Power3,Voltage4,Current4,Power4,\n")
+    file.write(dt+","+str(v1)+","+str(i1)+","+str(p1)+","+str(v2)+","+str(i2)+","+str(p2)+","+str(v3)+","+str(i3)+","+str(p3)+","+str(v4)+","+str(i4)+","+str(p4)+"\n")
+    file.flush()
+    file.close()
+
+i = True
+while i == True:
+        dt = str(datetime.now())
+        v1 = ina.voltage()
+        i1 = ina.current()
+        p1 = ina.power()
+        v2 = ina2.voltage()
+        i2 = ina2.current()
+        p2 = ina2.power()
+        v3 = ina3.voltage()
+        i3 = ina3.current()
+        p3 = ina3.power()
+        v4 = ina4.voltage()
+        i4 = ina4.current()
+        p4 = ina4.power()
+        if wrio == True:
+            writer(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4)
+        if dio == True:
+            printer(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4)
+        if cio == True:
+            csvwriter(dt, v1, i1, p1, v2, i2, p2, v3, i3, p3, v4, i4, p4)
+        time.sleep(5)
+
+
+  # Resistance = 10 ohms
+else:
+    print("ERROR.")
+    
